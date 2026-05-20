@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a1a">
+<title>Álbum Panini Mundial 2026</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #f5f5f4; color: #1a1a1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; }
+  @media (prefers-color-scheme: dark) {
+    html, body { background: #1a1a1a; color: #e5e5e5; }
+    .stat-card, .team-block, .controls input, .backup-text { background: #2a2a2a !important; border-color: #3a3a3a !important; color: #e5e5e5 !important; }
+    .sticker-btn { background: #2a2a2a; border-color: #3a3a3a; color: #e5e5e5; }
+    .sticker-btn.have { background: #14532d; border-color: #166534; color: #86efac; }
+    .progress-track { background: #2a2a2a; }
+    .team-header:hover { background: #2a2a2a; }
+    .backup-area { background: #1e3a5f !important; }
+    .backup-label { color: #93c5fd !important; }
+    .export-output { background: #2a2a2a; color: #e5e5e5; }
+    button { background: #2a2a2a; color: #e5e5e5; border-color: #3a3a3a; }
+    button:hover { background: #3a3a3a; }
+    h1 { color: #e5e5e5; }
+    .stat-label { color: #9ca3af; }
+    .team-meta { color: #9ca3af; }
+  }
+  body { padding: 12px; max-width: 600px; margin: 0 auto; }
+  h1 { font-size: 18px; margin: 0 0 12px 0; font-weight: 600; text-align: center; }
+  .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .stat-card { background: #ffffff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 10px; text-align: center; }
+  .stat-label { font-size: 11px; color: #6b7280; margin-bottom: 2px; }
+  .stat-value { font-size: 22px; font-weight: 600; line-height: 1.2; }
+  .progress-track { height: 8px; background: #e5e5e5; border-radius: 999px; overflow: hidden; margin-bottom: 8px; }
+  .progress-fill { height: 100%; background: #2563eb; transition: width 0.3s; }
+  .save-status { font-size: 11px; color: #6b7280; text-align: center; margin-bottom: 12px; min-height: 14px; }
+  .save-status.ok { color: #16a34a; }
+  .save-status.err { color: #dc2626; }
+  .controls { display: flex; gap: 6px; margin-bottom: 12px; }
+  .controls input { flex: 1; padding: 10px 12px; font-size: 14px; border: 1px solid #e5e5e5; border-radius: 8px; background: white; color: inherit; }
+  button { padding: 10px 14px; font-size: 14px; border: 1px solid #d4d4d4; background: white; color: inherit; border-radius: 8px; cursor: pointer; font-family: inherit; }
+  button:active { transform: scale(0.97); }
+  .controls button { padding: 10px; min-width: 44px; }
+  .team-block { background: white; border: 1px solid #e5e5e5; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+  .team-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; cursor: pointer; user-select: none; min-height: 48px; }
+  .team-name { font-size: 15px; font-weight: 500; }
+  .team-meta { font-size: 13px; color: #6b7280; }
+  .team-meta.complete { color: #16a34a; font-weight: 500; }
+  .team-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 4px 12px 12px; }
+  .sticker-btn { aspect-ratio: 1; border: 1px solid #e5e5e5; background: white; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; padding: 0; min-height: 44px; font-family: inherit; color: inherit; }
+  .sticker-btn.have { background: #dcfce7; color: #166534; border-color: #86efac; }
+  .team-block.collapsed .team-grid { display: none; }
+  .chevron { font-size: 18px; color: #9ca3af; transition: transform 0.2s; display: inline-block; }
+  .team-block.collapsed .chevron { transform: rotate(-90deg); }
+  .export-btn { width: 100%; padding: 14px; font-size: 15px; font-weight: 600; margin-top: 16px; background: #2563eb; color: white; border-color: #2563eb; }
+  .export-output { margin-top: 12px; background: #f9fafb; border-radius: 8px; padding: 12px; font-family: ui-monospace, Menlo, Monaco, monospace; font-size: 13px; line-height: 1.6; white-space: pre-wrap; max-height: 300px; overflow-y: auto; display: none; border: 1px solid #e5e5e5; }
+  .export-output.show { display: block; }
+  .toast { padding: 10px 12px; border-radius: 8px; font-size: 14px; margin-top: 8px; text-align: center; display: none; background: #dcfce7; color: #166534; }
+  .toast.show { display: block; }
+  .toast.err { background: #fee2e2; color: #991b1b; }
+  .hidden { display: none !important; }
+  .backup-area { margin-top: 16px; background: #dbeafe; border-radius: 8px; padding: 12px; }
+  .backup-label { font-size: 13px; color: #1e40af; margin-bottom: 8px; font-weight: 600; }
+  .backup-text { font-family: ui-monospace, Menlo, Monaco, monospace; font-size: 11px; line-height: 1.5; background: white; border: 1px solid #e5e5e5; border-radius: 6px; padding: 10px; width: 100%; min-height: 80px; max-height: 140px; overflow-y: auto; word-break: break-all; resize: vertical; color: inherit; }
+  .backup-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .backup-actions button { flex: 1; font-size: 13px; padding: 10px 8px; min-width: 90px; }
+  .install-hint { font-size: 12px; color: #6b7280; text-align: center; padding: 12px; margin-top: 16px; background: #f9fafb; border-radius: 8px; }
+  @media (prefers-color-scheme: dark) { .install-hint { background: #2a2a2a; color: #9ca3af; } }
+</style>
+</head>
+<body>
+
+<h1>📔 Álbum Panini Mundial 2026</h1>
+
+<div class="stats-bar">
+  <div class="stat-card"><div class="stat-label">Tengo</div><div class="stat-value" id="stat-have">0</div></div>
+  <div class="stat-card"><div class="stat-label">Faltan</div><div class="stat-value" id="stat-miss">980</div></div>
+  <div class="stat-card"><div class="stat-label">% Total</div><div class="stat-value" id="stat-pct">0%</div></div>
+</div>
+<div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+<div class="save-status" id="save-status">&nbsp;</div>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Buscar equipo (ej: ARG)..." autocomplete="off" autocorrect="off" autocapitalize="characters" />
+  <button id="expand-all" type="button" aria-label="Expandir">▼</button>
+  <button id="collapse-all" type="button" aria-label="Colapsar">▲</button>
+</div>
+
+<div id="teams-container"></div>
+
+<button class="export-btn" id="export-btn" type="button">📋 Ver y copiar mis faltantes</button>
+<div class="toast" id="toast"></div>
+<pre class="export-output" id="export-output"></pre>
+
+<div class="backup-area">
+  <div class="backup-label">🛡️ Backup (copialo y guardalo en una nota cada tanto)</div>
+  <textarea class="backup-text" id="backup-text" readonly></textarea>
+  <div class="backup-actions">
+    <button type="button" id="copy-backup">📋 Copiar</button>
+    <button type="button" id="paste-backup">📥 Pegar y restaurar</button>
+    <button type="button" id="reset-btn">🗑️ Reset</button>
+  </div>
+</div>
+
+<div class="install-hint">
+  💡 <strong>Tip:</strong> Para usarlo como app, abrí este archivo en Chrome o Safari → menú → "Agregar a pantalla de inicio". Va a quedar como un ícono más en el celu.
+</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'panini_mundial_2026';
+
+  const INTRO = [
+    { code: 'FWC-1', display: 'FWC', flag: '🏆', nums: ['00','1','2','3','4'] },
+    { code: 'FWC-2', display: 'FWC', flag: '🌎', nums: ['5','6','7','8'] },
+    { code: 'FWC-3', display: 'FWC', flag: '📜', nums: ['9','10','11','12','13','14','15','16','17','18','19'] },
+  ];
+
+  const TEAMS = [
+    ['MEX','🇲🇽'],['RSA','🇿🇦'],['KOR','🇰🇷'],['CZE','🇨🇿'],['CAN','🇨🇦'],['BIH','🇧🇦'],
+    ['QAT','🇶🇦'],['SUI','🇨🇭'],['BRA','🇧🇷'],['MAR','🇲🇦'],['HAI','🇭🇹'],['SCO','🏴󠁧󠁢󠁳󠁣󠁴󠁿'],
+    ['USA','🇺🇸'],['PAR','🇵🇾'],['AUS','🇦🇺'],['TUR','🇹🇷'],['GER','🇩🇪'],['CUW','🇨🇼'],
+    ['CIV','🇨🇮'],['ECU','🇪🇨'],['NED','🇳🇱'],['JPN','🇯🇵'],['SWE','🇸🇪'],['TUN','🇹🇳'],
+    ['BEL','🇧🇪'],['EGY','🇪🇬'],['IRN','🇮🇷'],['NZL','🇳🇿'],['ESP','🇪🇸'],['CPV','🇨🇻'],
+    ['KSA','🇸🇦'],['URU','🇺🇾'],['FRA','🇫🇷'],['SEN','🇸🇳'],['IRQ','🇮🇶'],['NOR','🇳🇴'],
+    ['ARG','🇦🇷'],['ALG','🇩🇿'],['AUT','🇦🇹'],['JOR','🇯🇴'],['POR','🇵🇹'],['COD','🇨🇩'],
+    ['UZB','🇺🇿'],['COL','🇨🇴'],['ENG','🏴󠁧󠁢󠁥󠁮󠁧󠁿'],['CRO','🇭🇷'],['GHA','🇬🇭'],['PAN','🇵🇦'],
+  ];
+
+  const ALL_GROUPS = [
+    ...INTRO.map(s => ({ code: s.code, display: s.display, flag: s.flag, nums: s.nums })),
+    ...TEAMS.map(([c, f]) => ({ code: c, display: c, flag: f, nums: Array.from({length:20}, (_,i) => String(i+1)) })),
+  ];
+
+  const TOTAL = ALL_GROUPS.reduce((s, g) => s + g.nums.length, 0);
+
+  let state = {};
+  ALL_GROUPS.forEach(g => { state[g.code] = {}; g.nums.forEach(n => { state[g.code][n] = false; }); });
+
+  function showStatus(msg, type) {
+    const el = document.getElementById('save-status');
+    el.textContent = msg;
+    el.className = 'save-status' + (type ? ' ' + type : '');
+    if (type === 'ok') setTimeout(() => { if (el.textContent === msg) { el.textContent = '\u00A0'; el.className = 'save-status'; } }, 1500);
+  }
+
+  function stateToCompact() {
+    const out = {};
+    for (const code in state) {
+      const haves = [];
+      for (const num in state[code]) if (state[code][num]) haves.push(num);
+      if (haves.length) out[code] = haves;
+    }
+    return JSON.stringify(out);
+  }
+
+  function compactToState(str) {
+    const parsed = JSON.parse(str);
+    ALL_GROUPS.forEach(g => { g.nums.forEach(n => { state[g.code][n] = false; }); });
+    for (const code in parsed) {
+      if (state[code] && Array.isArray(parsed[code])) {
+        parsed[code].forEach(num => { if (state[code][String(num)] !== undefined) state[code][String(num)] = true; });
+      } else if (state[code] && typeof parsed[code] === 'object') {
+        for (const num in parsed[code]) if (state[code][num] !== undefined) state[code][num] = parsed[code][num] === true;
+      }
+    }
+  }
+
+  let saveTimer = null;
+  function saveState() {
+    const data = stateToCompact();
+    try {
+      localStorage.setItem(STORAGE_KEY, data);
+      updateBackupBox();
+      showStatus('Guardado ✓', 'ok');
+    } catch (e) {
+      showStatus('Error al guardar — copiá el backup', 'err');
+    }
+  }
+
+  function debouncedSave() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveState, 200);
+  }
+
+  function loadState() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (data) { compactToState(data); return true; }
+    } catch (e) {}
+    return false;
+  }
+
+  function countHave() {
+    let n = 0;
+    for (const code in state) for (const num in state[code]) if (state[code][num]) n++;
+    return n;
+  }
+
+  function updateStats() {
+    const have = countHave();
+    const miss = TOTAL - have;
+    const pct = Math.round((have / TOTAL) * 100);
+    document.getElementById('stat-have').textContent = have;
+    document.getElementById('stat-miss').textContent = miss;
+    document.getElementById('stat-pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  function updateBackupBox() {
+    const el = document.getElementById('backup-text');
+    if (el) el.value = stateToCompact();
+  }
+
+  function updateTeamMeta(code) {
+    const group = ALL_GROUPS.find(g => g.code === code);
+    if (!group) return;
+    const have = group.nums.filter(n => state[code][n]).length;
+    const total = group.nums.length;
+    const meta = document.querySelector('[data-team-meta="' + code + '"]');
+    if (meta) {
+      meta.textContent = have + '/' + total;
+      meta.classList.toggle('complete', have === total);
+    }
+  }
+
+  function renderTeams() {
+    const container = document.getElementById('teams-container');
+    container.innerHTML = '';
+    ALL_GROUPS.forEach(g => {
+      const block = document.createElement('div');
+      block.className = 'team-block collapsed';
+      block.dataset.code = g.code;
+      block.dataset.search = (g.display + ' ' + g.code).toLowerCase();
+
+      const haveN = g.nums.filter(n => state[g.code][n]).length;
+      const isComplete = haveN === g.nums.length;
+
+      const header = document.createElement('div');
+      header.className = 'team-header';
+      header.innerHTML =
+        '<div><span class="team-name">' + g.display + ' ' + g.flag + '</span></div>' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+        '<span class="team-meta ' + (isComplete ? 'complete' : '') + '" data-team-meta="' + g.code + '">' + haveN + '/' + g.nums.length + '</span>' +
+        '<span class="chevron">▼</span>' +
+        '</div>';
+      header.addEventListener('click', () => block.classList.toggle('collapsed'));
+
+      const grid = document.createElement('div');
+      grid.className = 'team-grid';
+      g.nums.forEach(n => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'sticker-btn' + (state[g.code][n] ? ' have' : '');
+        btn.textContent = n;
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          state[g.code][n] = !state[g.code][n];
+          btn.classList.toggle('have', state[g.code][n]);
+          updateTeamMeta(g.code);
+          updateStats();
+          debouncedSave();
+        });
+        grid.appendChild(btn);
+      });
+
+      block.appendChild(header);
+      block.appendChild(grid);
+      container.appendChild(block);
+    });
+  }
+
+  function buildExport() {
+    const lines = ['FIGURITAS QUE ME FALTAN', ''];
+    let hasAny = false;
+    ALL_GROUPS.forEach(g => {
+      const missing = g.nums.filter(n => !state[g.code][n]);
+      if (missing.length === 0) return;
+      hasAny = true;
+      lines.push(g.display + ' ' + g.flag + ': ' + missing.join(', '));
+    });
+    if (!hasAny) lines.push('¡Completaste el álbum! 🎉');
+    return lines.join('\n');
+  }
+
+  function showToast(msg, isError) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isError ? ' err' : '');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+      } catch (e2) { return false; }
+    }
+  }
+
+  document.getElementById('export-btn').addEventListener('click', async () => {
+    const text = buildExport();
+    const out = document.getElementById('export-output');
+    out.textContent = text;
+    out.classList.add('show');
+    const ok = await copyText(text);
+    showToast(ok ? 'Copiado al portapapeles' : 'Seleccioná el texto y copialo', !ok);
+  });
+
+  document.getElementById('copy-backup').addEventListener('click', async () => {
+    const ok = await copyText(stateToCompact());
+    if (!ok) {
+      const el = document.getElementById('backup-text');
+      el.focus();
+      el.select();
+    }
+    showToast(ok ? 'Backup copiado' : 'Mantené apretado y copiá', !ok);
+  });
+
+  document.getElementById('paste-backup').addEventListener('click', async () => {
+    let text = '';
+    try { text = await navigator.clipboard.readText(); } catch (e) {}
+    if (!text) text = prompt('Pegá acá el backup:') || '';
+    if (!text) return;
+    try {
+      compactToState(text.trim());
+      saveState();
+      renderTeams();
+      updateStats();
+      showToast('Backup restaurado');
+    } catch (e) {
+      showToast('Backup inválido', true);
+    }
+  });
+
+  document.getElementById('search').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('.team-block').forEach(b => {
+      const match = !q || b.dataset.search.includes(q);
+      b.classList.toggle('hidden', !match);
+      if (q && match) b.classList.remove('collapsed');
+    });
+  });
+
+  document.getElementById('expand-all').addEventListener('click', () => {
+    document.querySelectorAll('.team-block:not(.hidden)').forEach(b => b.classList.remove('collapsed'));
+  });
+  document.getElementById('collapse-all').addEventListener('click', () => {
+    document.querySelectorAll('.team-block').forEach(b => b.classList.add('collapsed'));
+  });
+
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    if (!confirm('¿Reiniciar todas las figuritas? No se puede deshacer.')) return;
+    ALL_GROUPS.forEach(g => { g.nums.forEach(n => { state[g.code][n] = false; }); });
+    saveState();
+    renderTeams();
+    updateStats();
+    showToast('Reiniciado');
+  });
+
+  window.addEventListener('beforeunload', () => {
+    try { localStorage.setItem(STORAGE_KEY, stateToCompact()); } catch (e) {}
+  });
+  window.addEventListener('pagehide', () => {
+    try { localStorage.setItem(STORAGE_KEY, stateToCompact()); } catch (e) {}
+  });
+
+  loadState();
+  renderTeams();
+  updateStats();
+  updateBackupBox();
+})();
+</script>
+
+</body>
+</html>
